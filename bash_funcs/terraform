@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+alias tf=terraform
+
 function tf_clean_all_workspaces() {
     cd ${OCM_FUNCS_DIR_PATH}/..
 

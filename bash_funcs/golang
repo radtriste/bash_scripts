@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+alias goclean='go clean -cache -modcache && go mod tidy'
+
+function goset() {
+    export PATH_BEFORE_GO=${PATH}
+
+    local version=${1:-${DEFAULT_GO_VERSION}}
+    export GOROOT=/usr/local/go/${version}/go
+    export GOPATH=$HOME/go/${version}
+
+    export PATH="${GOROOT}/bin:${PATH}"
+    export PATH="${GOPATH}/bin:${PATH}"
+}

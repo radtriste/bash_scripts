@@ -1,5 +1,39 @@
 #!/usr/bin/env bash
 
+if which kubectl &> /dev/null ; 
+then
+    source <(kubectl completion bash)
+fi
+
+alias k8s='kubectl ${KARGS}'
+alias kget='k8s get'
+alias kedit='k8s edit'
+alias kdisplay='kget -o yaml'
+alias kdis='kdisplay'
+alias kdelete='k8s delete'
+alias kdel='kdelete'
+alias kapply='k8s apply'
+alias kcreate='k8s create'
+alias kc='kcontext'
+
+function kcon {	
+    if [ -z $1 ]; then
+        k8s config view --minify -o jsonpath='{..namespace}'
+	echo
+    else
+        k8s config set-context --current --namespace=$1
+    fi
+}
+function klogs {
+    k8s logs $@
+}
+function kpods {
+    kget pods $@
+}
+function kdeploy {
+    kget deploy $@
+}
+
 function set_temp_kubeconfig() 
 {
     export KUBECONFIG=$(mktemp)

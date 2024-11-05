@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+alias br="git branch"
+alias greset="git reset --hard"
+
 function git_current_branch() {
     git branch | grep \* | cut -d ' ' -f2
 }
