@@ -10,9 +10,9 @@ function crc_pwd() {
 
 function crc_launch() {
     local params=""
-    if [ ! -z ${OCP_LOCAL_MEMORY} ]; then params="${params} -m ${OCP_LOCAL_MEMORY}"; fi
-    if [ ! -z ${OCP_LOCAL_CPU} ]; then params="${params} -c ${OCP_LOCAL_CPU}"; fi
-    crc start ${params} -p ${OCP_LOCAL_PULL_SECRET_PATH}
+    if [ ! -z ${CRC_LOCAL_MEMORY} ]; then params="${params} -m ${CRC_LOCAL_MEMORY}"; fi
+    if [ ! -z ${CRC_LOCAL_CPU} ]; then params="${params} -c ${CRC_LOCAL_CPU}"; fi
+    crc start ${params} -p ${CRC_LOCAL_PULL_SECRET_PATH}
 }
 
 function crc_prepare_cluster() {

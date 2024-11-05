@@ -27,22 +27,13 @@ function ibm_cluster_list() {
 }
 
 function ibm_login() {
-    if [ "$1" = "--sso" ]; then
-        local username="${USERNAME}"
-        if [ ! -z $2 ]; then
-            username="$2"
-        fi
-        echo "SSO login with username ${username}@redhat.com"
-        ibmcloud login -u ${username}@redhat.com
+    echo "Login with API key"
+    local apikey=$(ibm_apikey)
+    if [ $? = 0 ]; then
+        ibmcloud login --apikey ${apikey}
     else
-        echo "Login with API key"
-        local apikey=$(ibm_apikey)
-        if [ $? = 0 ]; then
-            ibmcloud login --apikey ${apikey}
-        else
-            echo 'Error retrieving API key. Please use `ibm_apikey` script to check your API key'
-            return 1
-        fi
+        echo 'Error retrieving API key. Please use `ibm_apikey` script to check your API key'
+        return 1
     fi
 }
 
