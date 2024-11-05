@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+function set_temp_kubeconfig() 
+{
+    export KUBECONFIG=$(mktemp)
+    echo "Kubeconfig can be found on path: ${KUBECONFIG}"
+}

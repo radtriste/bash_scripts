@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+
+function git_current_branch() {
+    git branch | grep \* | cut -d ' ' -f2
+}
+
+function git_base_branch() {
+    local base_branch=$1
+    if [ -z ${base_branch} ]; then
+        git branch | grep master &> /dev/null
+        if [ "$?" = "0" ]; then
+            base_branch='master'
+        else
+            base_branch='main'
+        fi
+    fi
+    echo ${base_branch}
+}
+
+function git_amend() {
+    local push=${1}
+
+    set -x
+    git add .
+    git commit --amend
+    set +x
+
+    if [ "${push}" = "true" ]; then
+        git_push_force
+    fi
+}
+
+function git_merge_upstream() {
+    local branch=$(git_current_branch)
+
+    set -x
+    git fetch upstream
+
+    git merge "upstream/${branch}"
+
+    git push origin ${branch}
+    set +x
+}
+
+function git_push_force() {
+    remote=$1
+    if [ -z $remote ]; then
+        remote='origin'
+    fi
+
+    local branch=$(git_current_branch)
+
+    set -x
+    git push --force-with-lease ${remote} ${branch}
+    set +x
+}
+
+function git_rebase() {
+    local base_branch=$(git_base_branch $1)
+    local branch=$(git_current_branch)
+
+    set -x
+    git checkout ${base_branch}
+    set +x
+
+    git_merge_upstream
+
+    set -x
+    git checkout ${branch}
+    git rebase ${base_branch}
+    set +x
+}
+
+function git_reconstruct() {
+    local base_branch=$(git_base_branch $1)
+    local branch=$(git_current_branch)
+
+    echo "Reconstruct latest commit id from ${branch} on base branch ${base_branch}"
+
+    local commit_id=$(git log | head -n 1 | awk -F' ' '{print $2}')
+
+    echo "Got commit id ${commit_id}"
+
+    set -x
+    git checkout ${base_branch}
+    git branch -D ${branch}
+    git checkout -b ${branch}
+    git cherry-pick ${commit_id}
+    set +x
+}

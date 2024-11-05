@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+function tf_clean_all_workspaces() {
+    cd ${OCM_FUNCS_DIR_PATH}/..
+
+    for wk in $(terraform workspace list | tr -d '*' | awk '{print $1}'); do
+        if [ ! -z "${wk}" ]; then
+            terraform workspace delete "${wk}"
+        fi
+    done
+
+    cd -
+}

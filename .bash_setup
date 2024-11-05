@@ -1,0 +1,6 @@
+script_dir_path=`dirname "${BASH_SOURCE[0]}"`
+
+for f in "${script_dir_path}"/bash_funcs/*; 
+do 
+    source $f; 
+done

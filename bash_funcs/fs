@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+function check_fs_root() {
+    sudo du --exclude="/home" -x -h -a / | sort -r -h | head -30
+}
+
+function clean_fs_root() {
+    docker system prune -a
+    podman system prune -a
+    sudo dnf remove $(dnf repoquery --installonly --latest-limit=-2 -q)
+    sudo dnf system-upgrade clean
+    sudo journalctl --vacuum-size=100M
+    sudo dnf clean packages
+}

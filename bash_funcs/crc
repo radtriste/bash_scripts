@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+function crc_pwd() {
+    #CRC_BUNDLE_DIR=$(crc config view | grep bundle | grep .crc | awk '{print $4}')
+    #CRC_BUNDLE_CACHE_NAME=$(basename $CRC_BUNDLE_DIR | sed -e "s/\.crcbundle//g" )
+
+    # temporary commands because crc config fails ...
+    crc console --credentials | grep kubeadmin | awk -F"'" '{print $2}' | awk -F' ' '{print $6}'}
+}
+
+function crc_launch() {
+    local params=""
+    if [ ! -z ${OCP_LOCAL_MEMORY} ]; then params="${params} -m ${OCP_LOCAL_MEMORY}"; fi
+    if [ ! -z ${OCP_LOCAL_CPU} ]; then params="${params} -c ${OCP_LOCAL_CPU}"; fi
+    crc start ${params} -p ${OCP_LOCAL_PULL_SECRET_PATH}
+}
+
+function crc_prepare_cluster() {
+    # Setup nexus for maven mirroring
+    oc new-project nexus
+    oc new-app sonatype/nexus
+    oc expose svc/nexus
+}
+
+function crc_stop() {
+    crc stop
+}

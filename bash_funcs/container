@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+DEFAULT_CONTAINER_ENGINE=${DEFAULT_CONTAINER_ENGINE:-docker}
+
+function clean_containers() {
+    local container_engine=${1:=${DEFAULT_CONTAINER_ENGINE}}
+
+    ${container_engine} rm -f $(${container_engine} ps -a -q) || date
+    ${container_engine} rmi -f $(${container_engine} images -q) || date
+
+    ${container_engine} volume ls -qf dangling=true | xargs -r ${container_engine} volume rm
+}
+
+function container_registry_login() {
+    local container_engine=${container_engine:-podman}
+    local container_tls_options=${container_tls_options:-'--tls-verify=false'}
+
+    local registry=$1
+    local user=$2
+    local password=$3
+
+    if [ ! -z "${user}" ]; then
+        params="${params} -u anything"
+    fi
+    if [ ! -z "${password}" ]; then
+        params="${params} -p password"
+    fi
+
+    if [ !-z "${container_tls_options}" ]; then
+        params="${params} ${container_tls_options}"
+    fi
+
+    echo "${container_engine} login to ${registry}"
+    ${container_engine} login ${params} ${registry}
+}

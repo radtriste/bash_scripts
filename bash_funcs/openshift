@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+
+function ocp_project_pattern() {
+    echo ${1:-"${USER}"}
+}
+
+function ocp_clean_projects() {
+    oc get projects | grep "Active" | awk -F " " '{print $1}' | grep "^$(ocp_project_pattern)" | xargs oc delete project
+}
+
+function ocp_projects() {
+    oc get projects -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.creationTimestamp}{"\n"}{end}' | grep "^$(ocp_project_pattern)"
+}
+
+function ocp_token() {
+    oc whoami --show-token
+}
+
+function ocp_console() {
+    consoleRouteInfo=$(oc get routes -n openshift-console | grep console-openshift-console)
+
+    port=$(echo ${consoleRouteInfo} | awk '{print $4}')
+    servername=$(echo ${consoleRouteInfo} | awk '{print $2}')
+
+    url="${port}://${servername}"
+
+    if [ "$1" == "show-url" ]; then
+        echo ${url}
+    else
+        xdg-open ${url} &>/dev/null &
+    fi
+}
+
+function ocp_registry() {
+    oc get routes -n openshift-image-registry | tail -1 | awk '{print $2}'
+}
+
+function ocp_registry_login() {
+    local container_engine=${container_engine:-podman}
+    local container_tls_options=${container_tls_options:-'--tls-verify=false'}
+
+    local ocp_registry=$(ocp_registry)
+    echo "Logging to registry ${ocp_registry} using ${container_engine} and options ${container_tls_options}"
+
+    cmd="${container_engine} login"
+    if [ ! -z $container_tls_options ]; then
+        cmd="${cmd} ${container_tls_options}"
+    fi
+    cmd="${cmd} -u anything -p $(oc whoami -t) ${ocp_registry}"
+
+    $cmd
+}
+
+function ocp_retrieve_package() {
+    local url=$1
+    local package=$2
+    local result=`curl $url --silent | grep ${package} | sed -n 's/.*href="\([^"]*\).*/\1/p'`
+    result="${url}${result}"
+    echo ${result}
+}
+
+function ocp_retrieve_install_package() {
+    environment=${1}
+
+    local path="ocp"
+    if [ "${environment}" = "dev" ]; then
+        path="ocp-dev-preview"
+    fi
+    local url="https://mirror.openshift.com/pub/openshift-v4/clients/${path}/latest/"
+
+    echo `ocp_retrieve_package ${url} "openshift-install-linux"`
+    echo `ocp_retrieve_package ${url} "openshift-client-linux"`
+}

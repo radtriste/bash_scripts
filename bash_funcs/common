@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+function checkEnvVar() {
+    varname=$1
+    if [ -z "${!varname}" ]; then
+        echo "ERROR: Did you setup the '${1}' env var ?"
+        return 1
+    fi
+}

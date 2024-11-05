@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+DEFAULT_IBM_APIKEY_PATH="${HOME}/.ibm/apikey"
+
+function ibm_apikey() {
+    ibmcloud iam api-key-create ${DEFAULT_IBM_APIKEY_PATH}
+    echo "Generated API Key in ${DEFAULT_IBM_APIKEY_PATH}"
+
+    cat ${DEFAULT_IBM_APIKEY_PATH}
+}
+
+function ibm_cluster_config() {
+    ibmcloud oc cluster config -c $1
+
+    echo "Login with API key"
+    local apikey=$(ibm_apikey)
+    if [ $? = 0 ]; then
+        oc login -u apikey -p ${apikey}
+    else
+        echo 'Error retrieving API key. Please use `ibm_apikey` script to check your API key'
+        return 1
+    fi
+}
+
+function ibm_cluster_list() {
+    ibmcloud ks cluster ls
+}
+
+function ibm_login() {
+    if [ "$1" = "--sso" ]; then
+        local username="${USERNAME}"
+        if [ ! -z $2 ]; then
+            username="$2"
+        fi
+        echo "SSO login with username ${username}@redhat.com"
+        ibmcloud login -u ${username}@redhat.com
+    else
+        echo "Login with API key"
+        local apikey=$(ibm_apikey)
+        if [ $? = 0 ]; then
+            ibmcloud login --apikey ${apikey}
+        else
+            echo 'Error retrieving API key. Please use `ibm_apikey` script to check your API key'
+            return 1
+        fi
+    fi
+}
+
+function ibm_region() {
+    ibmcloud target -r $1
+}
